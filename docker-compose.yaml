@@ -1,0 +1,42 @@
+name: "best-fullstack-ever"
+
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-electric}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-password}
+      PGUSER: ${POSTGRES_USER:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-54321}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command:
+      - -c
+      - listen_addresses=*
+      - -c
+      - wal_level=logical
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  electric:
+    image: docker.io/electricsql/electric:latest
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-electric}?sslmode=disable
+      # Not suitable for production. Only use insecure mode in development or if you've otherwise secured the Electric API.
+      # See https://electric-sql.com/docs/guides/security
+      ELECTRIC_INSECURE: ${ELECTRIC_INSECURE:-true}
+    ports:
+      - "${ELECTRIC_PORT:-3001}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
