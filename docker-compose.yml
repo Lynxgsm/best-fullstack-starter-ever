@@ -12,6 +12,7 @@ services:
         command: ["postgres", "-p", "${POSTGRES_PORT}"]
         volumes:
             - postgres_data:/var/lib/postgresql/data
+            - ./packages/database/001-init.sql:/docker-entrypoint-initdb.d/001-init.sql
         ports:
             - "${POSTGRES_PORT}:${POSTGRES_PORT}"
 
@@ -46,7 +47,6 @@ services:
             DATABASE_URL: ${DATABASE_URL}
         command:
             [
-                "postgraphile",
                 "--connection",
                 "${DATABASE_URL}",
                 "--schema",
