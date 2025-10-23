@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+    postgres:
+        image: postgres:16
+        container_name: postgres
+        restart: always
+        env_file: .env
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+
+    keycloak:
+        image: quay.io/keycloak/keycloak:latest
+        container_name: keycloak
+        command: start-dev
+        restart: always
+        env_file: .env
+        environment:
+            KC_DB: ${KC_DB}
+            KC_DB_URL_HOST: ${KC_DB_URL_HOST}
+            KC_DB_USERNAME: ${KC_DB_USERNAME}
+            KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+            KC_DB_DATABASE: ${KC_DB_DATABASE}
+            KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+            KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+            KC_HTTP_PORT: ${KC_HTTP_PORT}
+            KC_HEALTH_ENABLED: ${KC_HEALTH_ENABLED}
+            KC_METRICS_ENABLED: ${KC_METRICS_ENABLED}
+        depends_on:
+            - postgres
+        ports:
+            - "8080:${KC_HTTP_PORT}"
+
+    postgraphile:
+        image: graphile/postgraphile:latest
+        container_name: postgraphile
+        restart: always
+        env_file: .env
+        environment:
+            DATABASE_URL: ${DATABASE_URL}
+        command:
+            [
+                "postgraphile",
+                "--connection",
+                "${DATABASE_URL}",
+                "--schema",
+                "${POSTGRAPHILE_SCHEMA}",
+                "--port",
+                "${POSTGRAPHILE_PORT}",
+                "--watch",
+            ]
+        ports:
+            - "${POSTGRAPHILE_PORT}:${POSTGRAPHILE_PORT}"
+        depends_on:
+            - postgres
+
+volumes:
+    postgres_data:
