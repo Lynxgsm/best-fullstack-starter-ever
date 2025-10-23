@@ -1,0 +1,12 @@
+query AllCategories {
+  allCategories {
+    nodes {
+      id
+      name
+      color
+      createdAt
+      updatedAt
+    }
+  }
+}
+
