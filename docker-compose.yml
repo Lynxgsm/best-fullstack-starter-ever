@@ -54,6 +54,8 @@ services:
                 "--port",
                 "${POSTGRAPHILE_PORT}",
                 "--watch",
+                "--cors",
+                "--enhance-graphiql",
             ]
         ports:
             - "${POSTGRAPHILE_PORT}:${POSTGRAPHILE_PORT}"
