@@ -1,20 +1,16 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
+import type { Env } from '@/constants/envs';
 
-interface ApolloClientConfig {
-  GRAPHQL_HOST: string;
-  GQL_API_KEY?: string;
-  NODE_ENV: string;
-}
+export const createApolloClient = (env: Env) => {
+  const { VITE_GRAPHQL_HOST, VITE_GQL_API_KEY, VITE_NODE_ENV } = env;
 
-export const createApolloClient = (env: ApolloClientConfig) => {
-  const { GRAPHQL_HOST, GQL_API_KEY, NODE_ENV } = env;
+  console.log('🔗 Apollo Client connecting to:', VITE_GRAPHQL_HOST);
 
   const httpLink = new HttpLink({
-    uri: GRAPHQL_HOST || 'http://localhost:5000/graphql',
-    credentials: 'include',
-    headers: GQL_API_KEY
+    uri: VITE_GRAPHQL_HOST,
+    headers: VITE_GQL_API_KEY
       ? {
-          Authorization: `Bearer ${GQL_API_KEY}`,
+          Authorization: `Bearer ${VITE_GQL_API_KEY}`,
         }
       : {},
   });
@@ -36,6 +32,6 @@ export const createApolloClient = (env: ApolloClientConfig) => {
       },
     },
     // Enable SSR mode for server-side rendering
-    ssrMode: NODE_ENV === 'production',
+    ssrMode: VITE_NODE_ENV === 'production',
   });
 };

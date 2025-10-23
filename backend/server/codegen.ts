@@ -24,6 +24,8 @@ const config: CodegenConfig = {
         withHOC: false,
         withComponent: false,
         withRefetchFn: true,
+        apolloReactHooksImportFrom: '@apollo/client/react',
+        apolloReactCommonImportFrom: '@apollo/client/react',
       },
     },
   },
