@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
     postgres:
         image: postgres:16
@@ -10,10 +8,13 @@ services:
             POSTGRES_USER: ${POSTGRES_USER}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             POSTGRES_DB: ${POSTGRES_DB}
+            PGPORT: ${POSTGRES_PORT}
+        command: ["postgres", "-p", "${POSTGRES_PORT}"]
         volumes:
             - postgres_data:/var/lib/postgresql/data
+            - ./packages/database/001-init.sql:/docker-entrypoint-initdb.d/001-init.sql
         ports:
-            - "5432:5432"
+            - "${POSTGRES_PORT}:${POSTGRES_PORT}"
 
     keycloak:
         image: quay.io/keycloak/keycloak:latest
@@ -46,7 +47,6 @@ services:
             DATABASE_URL: ${DATABASE_URL}
         command:
             [
-                "postgraphile",
                 "--connection",
                 "${DATABASE_URL}",
                 "--schema",
@@ -60,5 +60,21 @@ services:
         depends_on:
             - postgres
 
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        container_name: pgadmin
+        restart: always
+        env_file: .env
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
+        ports:
+            - "${PGADMIN_PORT}:80"
+        depends_on:
+            - postgres
+
 volumes:
     postgres_data:
+    pgadmin_data:
